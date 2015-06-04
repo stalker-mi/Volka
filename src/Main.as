@@ -7,9 +7,6 @@ package
     import flash.filesystem.FileStream;
 	import flash.display.Bitmap;
 	import flash.utils.setTimeout;
-	import flash.utils.ByteArray;
-	import flash.display.Loader;
-	import flash.events.Event;
 	
 	import starling.core.Starling;
     import starling.events.Event;
@@ -25,13 +22,13 @@ package
 	public class Main extends Sprite 
 	{
 		private var mStarling:Starling;
-		private var mBackground:Loader;
+		private var mBackground:Bitmap;
         private var mProgressBar:ProgressBar;
 		
 		public function Main() 
 		{
 			if (stage) init();
-			else addEventListener(starling.events.Event.ADDED_TO_STAGE, init);
+			else addEventListener(Event.ADDED_TO_STAGE, init);
 		}
 		
 		private function init(e:Object = null):void 
@@ -42,26 +39,23 @@ package
             Starling.handleLostContext = true; // recommended everywhere when using AssetManager
             RenderTexture.optimizePersistentBuffers = true; // should be safe on Desktop
 
-            mStarling = new Starling(Game, stage, null, null, "auto", "auto");
+            mStarling = new Starling(Root, stage, null, null, "auto", "auto");
             mStarling.simulateMultitouch = true;
             mStarling.enableErrorChecking = Capabilities.isDebugger;
-            mStarling.addEventListener(starling.events.Event.ROOT_CREATED, function():void
+            mStarling.addEventListener(Event.ROOT_CREATED, function():void
             {
                 loadAssets(startGame);
             });
+			mStarling.start();
+            initElements();
 		}
 		
 		private function loadAssets(onComplete:Function):void
         {
-			var appDir:File = File.applicationDirectory;
-            var assets:AssetManager = new AssetManager();
+			var assets:AssetManager = new AssetManager();
 
             assets.verbose = Capabilities.isDebugger;
-            assets.enqueue(appDir.resolvePath("assets"));
-
-            // Now, while the AssetManager now contains pointers to all the assets, it actually
-            // has not loaded them yet. This happens in the "loadQueue" method; and since this
-            // will take a while, we'll update the progress bar accordingly.
+            assets.enqueue(EmbeddedAssets);
 
             assets.loadQueue(function(ratio:Number):void
             {
@@ -72,29 +66,16 @@ package
 		
 		private function startGame(assets:AssetManager):void
         {
-            var game:Game = mStarling.root as Game;
-            game.start(assets);
+            var root:Root = mStarling.root as Root;
+            root.start(assets);
             setTimeout(removeElements, 150); // delay to make 100% sure there's no flickering.
         }
 		private function initElements():void
         {
             // Add background image.
-            var bgFile:File = File.applicationDirectory.resolvePath("background.jpg");
-            var bytes:ByteArray = new ByteArray();
-            var stream:FileStream = new FileStream();
-            stream.open(bgFile, FileMode.READ);
-            stream.readBytes(bytes, 0, stream.bytesAvailable);
-            stream.close();
-
-            mBackground = new Loader();
-            mBackground.loadBytes(bytes);
-            mStarling.nativeOverlay.addChild(mBackground);
-
-            mBackground.contentLoaderInfo.addEventListener(flash.events.Event.COMPLETE,
-                function(e:Object):void
-                {
-                    (mBackground.content as Bitmap).smoothing = true;
-                });
+			mBackground = new EmbeddedAssets.background();
+            mBackground.smoothing = true;
+            addChild(mBackground);
 
             // While the assets are loaded, we will display a progress bar.
 
