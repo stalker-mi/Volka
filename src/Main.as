@@ -2,9 +2,6 @@ package
 {
 	import flash.display.Sprite;
 	import flash.system.Capabilities;
-	import flash.filesystem.File;
-    import flash.filesystem.FileMode;
-    import flash.filesystem.FileStream;
 	import flash.display.Bitmap;
 	import flash.utils.setTimeout;
 	
@@ -18,7 +15,7 @@ package
 	 * ...
 	 * @author Vovik
 	 */
-	[SWF(width="320", height="480", frameRate="60", backgroundColor="#222222")]
+	[SWF(width="800", height="600", frameRate="60", backgroundColor="#111111")]
 	public class Main extends Sprite 
 	{
 		private var mStarling:Starling;
@@ -37,6 +34,18 @@ package
 			// entry point
 			Starling.multitouchEnabled = true; // for Multitouch Scene
             Starling.handleLostContext = true; // recommended everywhere when using AssetManager
+
+			mStarling = new Starling(Root, stage);
+			mStarling.antiAliasing = 2; 
+			mStarling.start();
+			 mStarling.addEventListener(Event.ROOT_CREATED, function():void
+            {
+                var root:Root = mStarling.root as Root;
+				root.start(null);
+            });
+			/*
+			Starling.multitouchEnabled = true; // for Multitouch Scene
+            Starling.handleLostContext = true; // recommended everywhere when using AssetManager
             RenderTexture.optimizePersistentBuffers = true; // should be safe on Desktop
 
             mStarling = new Starling(Root, stage, null, null, "auto", "auto");
@@ -46,8 +55,10 @@ package
             {
                 loadAssets(startGame);
             });
+			mStarling.antiAliasing = 2; 
 			mStarling.start();
             initElements();
+			*/
 		}
 		
 		private function loadAssets(onComplete:Function):void

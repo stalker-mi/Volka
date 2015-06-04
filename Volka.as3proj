@@ -8,9 +8,9 @@
     <movie fps="30" />
     <movie width="800" />
     <movie height="600" />
-    <movie version="16" />
+    <movie version="17" />
     <movie minorVersion="0" />
-    <movie platform="AIR" />
+    <movie platform="Flash Player" />
     <movie background="#FFFFFF" />
   </output>
   <!-- Other classes to be compiled into your SWF -->
@@ -53,6 +53,7 @@
   <!-- SWC Libraries -->
   <libraryPaths>
     <element path="libs\starling.swc" />
+    <element path="libs\as3isolib.v1.core.swc" />
   </libraryPaths>
   <!-- External Libraries -->
   <externalLibraryPaths>
