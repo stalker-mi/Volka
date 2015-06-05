@@ -19,7 +19,6 @@ package
         
         [Embed(source="../assets/atlas.png")]
         public static const atlas:Class;
-
         // Bitmap textures
 		
         [Embed(source="../assets/background.jpg")]
@@ -29,5 +28,6 @@ package
         
         [Embed(source="../assets/click.mp3")]
         public static const click:Class;
+
     }
 }
