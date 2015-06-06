@@ -1,5 +1,7 @@
 package 
 {
+	import flash.geom.Point;
+	
 	import fr.kouma.starling.utils.Stats;
 	import isohill.GridDisplay;
 	import isohill.IsoHill;
@@ -8,121 +10,98 @@ package
 	import isohill.IsoSprite;
 	import isohill.IsoMovieClip;
 	import isohill.Point3;
-	import isohill.loaders.SpriteSheetLoader;
-	import isohill.AssetManager;
 	
     import starling.display.Sprite;
     import starling.utils.AssetManager;
 	import starling.display.Button;
 	import starling.events.Event;
-	
-	import flash.geom.Rectangle;
+	import starling.text.TextField;
+	import starling.textures.Texture;
+	import starling.display.MovieClip;
 	
     public class Root extends Sprite
     {
-        private static var sAssets:starling.utils.AssetManager;
-        public var isoHill:IsoHill;
+		private var isoHill:IsoHill;
+        private static var sAssets:AssetManager;
+        private var gridArr:Array;
+		private var grid:GridDisplay;
+		private var txt:TextField;
 		
         public function Root()
         {
             //
         }
 		
-		 public function start(assets:starling.utils.AssetManager):void
+		 public function start(assets:AssetManager):void
         {
             sAssets = assets;
-			init_myassets();	
-			setup();
-			
-        }
-        
-		private function init_myassets():void {
-			var areas:Vector.<Rectangle>= new <Rectangle>[];
-			for (var y:int = 0; y < 128; y += 64) {
-				for (var x:int = 0; x < 256; x += 64) {
-					var rect:Rectangle = new Rectangle(x, y, 64, 64);
-					areas.push(rect);
-				}
-			}
-            var loader:SpriteSheetLoader = new SpriteSheetLoader("../assets/64x64.png", areas);
-			isohill.AssetManager.instance.addLoader(loader);
-			
-			areas= new <Rectangle>[];
-			for (y = 0; y < 32; y += 32) {
-				for (x = 0; x < 64; x += 64) {
-					rect = new Rectangle(x, y, 64, 32);
-					areas.push(rect);
-				}
-			}
-            loader = new SpriteSheetLoader("../assets/grass.png", areas);
-			isohill.AssetManager.instance.addLoader(loader);
-			
-			areas= new <Rectangle>[];
-			for (y = 0; y < 128; y += 128) {
-				for (x = 0; x < 128; x += 64) {
-					rect = new Rectangle(x, y, 64, 128);
-					areas.push(rect);
-				}
-			}
-            loader = new SpriteSheetLoader("../assets/64x128.png", areas);
-			isohill.AssetManager.instance.addLoader(loader);
-			
-			areas= new <Rectangle>[];
-			for (y = 0; y < 192; y += 192) {
-				for (x = 0; x < 384; x += 192) {
-					rect = new Rectangle(x, y, 192, 192);
-					areas.push(rect);
-				}
-			}
-            loader = new SpriteSheetLoader("../assets/192x192.png", areas);
-			isohill.AssetManager.instance.addLoader(loader);
-		}
-		
-		private function setup():void {
-
+			var myAsset:myAssets = new myAssets();	
 			isoHill = new IsoHill(); // instance that engine
 			addChild(isoHill); // add the engine to starling
-			
-			var gridArr:Array = new Array();
-			var grid:GridDisplay = new GridDisplay("layer1", 10, 10, 64, 32, "isometric");
-			for (var x:int = 0; x < 10; x++) {
-				gridArr[x] = new Array();
-				for (var y:int = 0; y < 10; y++) {
-					var pt3:Point3 = grid.toLayerPt(x, y);
-					var sprite:IsoMovieClip = new IsoMovieClip("../assets/grass.png", "sprite1", pt3);
-					grid.add(sprite);
-					gridArr[x][y] = 0;
-				}
-			}
-			
-			for (var i:int = 0; i < 20; i++) {
-				addHouse(grid,gridArr);
-			}
-			
+			init_buttons();
+			init_grid();
+			init_houses();
 			isoHill.addLayer(0, grid);
 			isoHill.addPlugin(new IsoCamera(new Point3Input(stage, 0, 70)));
 			isoHill.start(); // start all the runtime logic
 			addChild(new Stats()); // Mrdoob's performance monitor
+        }
+		
+		private function init_grid():void {
+			gridArr = new Array();
+			grid = new GridDisplay("layer1", 10, 10, 64, 32, "isometric");
+			for (var x:int = 0; x < 10; x++) {
+				gridArr[x] = new Array();
+				for (var y:int = 0; y < 10; y++) {
+					var pt3:Point3 = grid.toLayerPt(x, y);
+					var sprite:IsoMovieClip = new IsoMovieClip(myAssets.ASSETS_GRASS, "sprite_grass", pt3);
+					grid.add(sprite);
+					gridArr[x][y] = 0;
+				}
+			}
+		}
+		
+		private function init_houses():void {
+			for (var i:int = 0; i < 20; i++) {
+				addHouse();
+			}
+		}
+			
+		private function init_buttons()	:void {
+			
+			txt = new TextField(60, 90, "Количество домов:\n", "Verdana", 8,0xffffff);
+			txt.y=10;
+			txt.x = 80;
+			txt.vAlign = "top";
+			addChild(txt);
 			
 			var button:Button = new Button(sAssets.getTexture("button_square"), "+");
-			button.x = 100;
+			button.x = 150;
             button.y = 10;
 			addChild(button);
 			button.addEventListener(Event.TRIGGERED, function():void {
 				sAssets.playSound("click");
-				addHouse(grid,gridArr);
+				addHouse();
 			});
 			
+			button = new Button(sAssets.getTexture("button_square"), "-");
+			button.x = 230;
+            button.y = 10;
+			addChild(button);
+			button.addEventListener(Event.TRIGGERED, function():void {
+				sAssets.playSound("click");
+				removeHouse();
+			});
 		}
 		
 		
-		private function addHouse(grid:GridDisplay,gridArr:Array):void
+		private function addHouse():void
         {
 			var x:int;
 			var y:int;
 			if (len(gridArr) == 100)
 			{
-				trace("sd");
+				txt.text = "Количество домов:\n" + len(gridArr).toString()+"\nПоле заполненно";
 			}
 			else
 			{
@@ -138,10 +117,51 @@ package
 							y = int(Math.random() * 10);
 						}
 					}
-					var pt3:Point3 = grid.toLayerPt(x, y);
-					grid.add(rand_house(pt3));
-					
+					var house:myHouse = new myHouse(isoHill,grid);
+					house.addSprite(x, y);
+					addChild(house);
+					house.addEventListener(myHouse.GRID_ARR, onGridArr);
 			}
+		}
+		
+		private function removeHouse():void
+        {
+			var x:int;
+			var y:int;
+			if (len(gridArr) == 0)
+			{
+				txt.text = "Количество домов:\n" + len(gridArr).toString()+"\nПоле пустое";
+			}
+			else
+			{
+				while (len(gridArr) >= 0) {
+					x = int(Math.random() * 10);
+					y = int(Math.random() * 10);
+					if (gridArr[x][y] == 1) {
+							gridArr[x][y] = 0;
+							break;
+							}
+						else {
+							x = int(Math.random() * 10);
+							y = int(Math.random() * 10);
+						}
+				}
+				
+				
+			}
+		}
+		
+		private function dust(x:int, y:int):void {
+			var frames:Vector.<Texture> = sAssets.getTextures("dust1x1_2");
+			var mMovie:MovieClip = new MovieClip(frames, 23);
+			mMovie.x = x-20;
+			mMovie.y = y+20;
+			addChild(mMovie);
+			isoHill.juggler.add(mMovie);
+			mMovie.addEventListener(Event.COMPLETE, function():void {
+				isoHill.juggler.remove(mMovie);
+				removeChild(mMovie);
+			});
 		}
        
 		private function len(arr:Array):int {
@@ -153,29 +173,11 @@ package
 			
 		}
 		
-		private function rand_house(pt3:Point3):IsoMovieClip {
-			var k:int = Math.random() * 2 + 1;
-			var skin:int;
-			var sprite:IsoMovieClip;
-			switch(k) {
-				case 1: 
-					skin = int(Math.random() * 7);
-					sprite = new IsoMovieClip("../assets/64x64.png", "sprite1", pt3);
-					sprite.currentFrame = skin;
-					break;
-				case 2:
-					skin = Math.round(Math.random());
-					sprite = new IsoMovieClip("../assets/64x128.png", "sprite1", pt3);
-					sprite.currentFrame = skin;
-					break;
-				case 3:
-					skin = Math.round(Math.random());
-					sprite = new IsoMovieClip("../assets/192x192.png", "sprite1", pt3);
-					sprite.currentFrame = skin;
-					break;
-			}
-			return sprite;
+		private function onGridArr(event:Event,data:Point):void {
+			gridArr[data.x][data.y]= 0;
 		}
+		
+		public static function get assets():AssetManager { return sAssets; }
 		
     }
 }
