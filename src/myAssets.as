@@ -78,7 +78,7 @@ package
         {
 			areas= new <Rectangle>[];
 			for (y = 0; y < 32; y += 32) {
-				for (x = 0; x < 64; x += 64) {
+				for (x = 0; x < 128; x += 64) {
 					rect = new Rectangle(x, y, 64, 32);
 					areas.push(rect);
 				}

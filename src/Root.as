@@ -23,9 +23,9 @@ package
     {
 		private var isoHill:IsoHill;
         private static var sAssets:AssetManager;
-        private var gridArr:Array;
 		private var grid:GridDisplay;
 		private var txt:TextField;
+		private var houses:Vector.<Vector.<myHouse>>;
 		
         public function Root()
         {
@@ -48,15 +48,19 @@ package
         }
 		
 		private function init_grid():void {
-			gridArr = new Array();
+			houses = new Vector.<Vector.<myHouse>>();
 			grid = new GridDisplay("layer1", 10, 10, 64, 32, "isometric");
 			for (var x:int = 0; x < 10; x++) {
-				gridArr[x] = new Array();
+				houses[x]= new <myHouse>[];
 				for (var y:int = 0; y < 10; y++) {
 					var pt3:Point3 = grid.toLayerPt(x, y);
 					var sprite:IsoMovieClip = new IsoMovieClip(myAssets.ASSETS_GRASS, "sprite_grass", pt3);
+					sprite.currentFrame = 0;
 					grid.add(sprite);
-					gridArr[x][y] = 0;
+					houses[x][y]=new myHouse(isoHill,grid);
+					houses[x][y].isAdded = false;
+					houses[x][y].addEventListener(myHouse.CHANGE_HOUSE, onNewText);
+					addChild(houses[x][y]);
 				}
 			}
 		}
@@ -99,17 +103,18 @@ package
         {
 			var x:int;
 			var y:int;
-			if (len(gridArr) == 100)
+
+			if (len(houses) == 100)
 			{
-				txt.text = "Количество домов:\n" + len(gridArr).toString()+"\nПоле заполненно";
+				txt.text = "Количество домов:\n" + len(houses).toString()+"\nПоле заполненно";
 			}
 			else
 			{
-				while(len(gridArr)<=100){
+				while(len(houses)<=100){
 						x = int(Math.random() * 10);
 						y = int(Math.random() * 10);
-						if (gridArr[x][y] == 0) {
-							gridArr[x][y] = 1;
+						if (!houses[x][y].isAdded) {
+							houses[x][y].addSprite(x, y);
 							break;
 							}
 						else {
@@ -117,10 +122,6 @@ package
 							y = int(Math.random() * 10);
 						}
 					}
-					var house:myHouse = new myHouse(isoHill,grid);
-					house.addSprite(x, y);
-					addChild(house);
-					house.addEventListener(myHouse.GRID_ARR, onGridArr);
 			}
 		}
 		
@@ -128,17 +129,17 @@ package
         {
 			var x:int;
 			var y:int;
-			if (len(gridArr) == 0)
+			if (len(houses) == 0)
 			{
-				txt.text = "Количество домов:\n" + len(gridArr).toString()+"\nПоле пустое";
+				txt.text = "Количество домов:\n" + len(houses).toString()+"\nПоле пустое";
 			}
 			else
 			{
-				while (len(gridArr) >= 0) {
+				while (len(houses) >= 0) {
 					x = int(Math.random() * 10);
 					y = int(Math.random() * 10);
-					if (gridArr[x][y] == 1) {
-							gridArr[x][y] = 0;
+					if (houses[x][y].isAdded) {
+							houses[x][y].removeSprite(x, y);
 							break;
 							}
 						else {
@@ -146,37 +147,20 @@ package
 							y = int(Math.random() * 10);
 						}
 				}
-				
-				
 			}
 		}
 		
-		private function dust(x:int, y:int):void {
-			var frames:Vector.<Texture> = sAssets.getTextures("dust1x1_2");
-			var mMovie:MovieClip = new MovieClip(frames, 23);
-			mMovie.x = x-20;
-			mMovie.y = y+20;
-			addChild(mMovie);
-			isoHill.juggler.add(mMovie);
-			mMovie.addEventListener(Event.COMPLETE, function():void {
-				isoHill.juggler.remove(mMovie);
-				removeChild(mMovie);
-			});
-		}
-       
-		private function len(arr:Array):int {
+		private function len(arr:Vector.<Vector.<myHouse>>):int {
 			var k:int = 0;
 			for (var i:int = 0; i < arr.length; i++)
 				for (var j:int = 0; j < arr[i].length; j++)
-					if (arr[i][j] == 1) k++;
+					if (arr[i][j].isAdded) k++;
 			return k;
-			
 		}
-		
-		private function onGridArr(event:Event,data:Point):void {
-			gridArr[data.x][data.y]= 0;
+
+		private function onNewText(event:Event):void {
+			txt.text = "Количество домов:\n" + len(houses).toString();
 		}
-		
 		public static function get assets():AssetManager { return sAssets; }
 		
     }
